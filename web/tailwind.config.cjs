@@ -23,7 +23,7 @@ module.exports = {
       colors: {
         gray2: "#4f4f4f",
         gray3: "#828282",
-        gray3: "#BDBDBD",
+        gray4: "#BDBDBD",
         "soft-blue": "#F6F8FB",
         "accent-blue": "#97BEF4",
         "primary-blue": "#2F80ED",
