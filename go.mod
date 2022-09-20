@@ -9,4 +9,5 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 )

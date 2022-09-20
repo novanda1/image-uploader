@@ -7,9 +7,11 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httprate"
+
+	"github.com/novanda1/image-uploader/conf"
 )
 
-func NewApi() {
+func NewApi(config *conf.GlobalConfiguration) *chi.Mux {
 	r := chi.NewRouter()
 
 	// A good base middleware stack
@@ -26,11 +28,14 @@ func NewApi() {
 
 	r.Mount("/v1", V1())
 
-	http.ListenAndServe(":3000", r)
+	return r
 }
 
 func V1() http.Handler {
 	r := chi.NewRouter()
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("API v1"))
+	})
 	r.Mount("/image", Image())
 	return r
 }
