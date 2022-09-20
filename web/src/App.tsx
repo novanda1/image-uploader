@@ -1,4 +1,4 @@
-import { useState } from "react";
+import image from "./assets/image.svg";
 
 function App() {
   return (
@@ -12,11 +12,18 @@ function App() {
             File should be Jpeg, Png,...
           </p>
 
+          <div className="border-dashed border border-accent-blue bg-soft-blue rounded-[12px] mt-[29px] py-[35px]">
+            <img role="none" src={image} className="mx-auto mb-[53px]" />
+            <p className="text-gray4 text-sm text-center">
+              Drag & Drop your image here
+            </p>
+          </div>
+
           <p className="text-center mt-[18px] text-gray4 font-medium text-xs">
             Or
           </p>
 
-          <button className="bg-primary-blue rounded-[8px] py-2 px-4 text-center block mx-auto mt-[29px]">
+          <button className="bg-primary-blue hover:bg-blue-400 rounded-[8px] py-2 px-4 text-sm text-center text-white block mx-auto mt-[29px]">
             Choose a file
           </button>
         </div>
