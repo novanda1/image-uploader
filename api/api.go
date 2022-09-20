@@ -47,5 +47,13 @@ func Image() http.Handler {
 		w.Write([]byte("hi"))
 	})
 
+	r.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("handle upload"))
+	})
+
+	r.Get("/{image_id}", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("handle get image by id"))
+	})
+
 	return r
 }
