@@ -1,11 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 
 	"github.com/novanda1/image-uploader/conf"
@@ -13,6 +16,16 @@ import (
 
 func NewApi(config *conf.GlobalConfiguration) *chi.Mux {
 	r := chi.NewRouter()
+
+	// cors
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   strings.Split(config.API.ExternalURL, ","),
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
 	// A good base middleware stack
 	r.Use(middleware.RequestID)
@@ -48,6 +61,10 @@ func Image() http.Handler {
 	})
 
 	r.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+
+		fmt.Printf("file %s", r.FormValue("file"))
+
 		w.Write([]byte("handle upload"))
 	})
 
