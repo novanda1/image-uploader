@@ -13,8 +13,14 @@ type APIConfiguration struct {
 	ExternalURL string `json:"external_url" envconfig:"API_EXTERNAL_URL"`
 }
 
+type ImageKitConfiguration struct {
+	PubKey  string `json:"imagekit_pubkey" envconfig:"IMAGEKIT_PUBKEY"`
+	PrivKey string `json:"imagekit_privkey" envconfig:"IMAGEKIT_PRIVKEY"`
+}
+
 type GlobalConfiguration struct {
 	API APIConfiguration
+	IK  ImageKitConfiguration
 }
 
 func LoadGlobal(filename string) (*GlobalConfiguration, error) {

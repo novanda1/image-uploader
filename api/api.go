@@ -1,7 +1,8 @@
 package api
 
 import (
-	"fmt"
+	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 
+	"github.com/codedius/imagekit-go"
 	"github.com/novanda1/image-uploader/conf"
 )
 
@@ -39,21 +41,25 @@ func NewApi(config *conf.GlobalConfiguration) *chi.Mux {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Mount("/v1", V1())
+	r.Mount("/v1", V1(config))
 
 	return r
 }
 
-func V1() http.Handler {
+func V1(config *conf.GlobalConfiguration) http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("API v1"))
 	})
-	r.Mount("/image", Image())
+	r.Mount("/image", Image(config))
 	return r
 }
 
-func Image() http.Handler {
+type UploadParams struct {
+	File string `json:"file"`
+}
+
+func Image(config *conf.GlobalConfiguration) http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -61,11 +67,39 @@ func Image() http.Handler {
 	})
 
 	r.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+		var params UploadParams
 
-		fmt.Printf("file %s", r.FormValue("file"))
+		err := json.NewDecoder(r.Body).Decode(&params)
+		if err != nil {
+			w.Write([]byte("failed to parse body"))
+		}
 
-		w.Write([]byte("handle upload"))
+		opts := imagekit.Options{
+			PublicKey:  config.IK.PubKey,
+			PrivateKey: config.IK.PrivKey,
+		}
+
+		ik, err := imagekit.NewClient(&opts)
+		if err != nil {
+			w.Write([]byte("failed to setup imagekit"))
+		}
+
+		ur := imagekit.UploadRequest{
+			File:              params.File, // []byte OR *url.URL OR url.URL OR base64 string
+			FileName:          "file name",
+			UseUniqueFileName: false,
+			Tags:              []string{},
+			Folder:            "/image-uploader",
+			IsPrivateFile:     false,
+			CustomCoordinates: "",
+			ResponseFields:    nil,
+		}
+
+		resp, err := ik.Upload.ServerUpload(context.Background(), &ur)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(resp)
 	})
 
 	r.Get("/{image_id}", func(w http.ResponseWriter, r *http.Request) {
