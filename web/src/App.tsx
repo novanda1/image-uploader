@@ -1,6 +1,62 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import image from "./assets/image.svg";
 
 function App() {
+  const [file, setFile] = useState<File | null>(null);
+  const dropzoneRef = useRef<HTMLDivElement>(null);
+
+  const handleDragOver = useCallback(() => {
+    console.log("dragover");
+    dropzoneRef.current?.classList.add("border-blue-700");
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    console.log("dragleave");
+    dropzoneRef.current?.classList.remove("border-blue-700");
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    dropzoneRef.current?.classList.remove("border-blue-700");
+    const { files } = e.dataTransfer;
+    setFile(files[0]);
+  }, []);
+
+  const onInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.length) setFile(e.target.files[0]);
+    },
+    []
+  );
+
+  const handleUpload = useCallback(async () => {
+    console.log("uploading: ", file);
+
+    setFile(null);
+  }, [file]);
+
+  useEffect(() => {
+    if (dropzoneRef.current) {
+      dropzoneRef.current.addEventListener("dragover", handleDragOver);
+      dropzoneRef.current.addEventListener("dragleave", handleDragLeave);
+      dropzoneRef.current.addEventListener<any>("drop", handleDrop);
+    }
+
+    return () => {
+      dropzoneRef.current?.removeEventListener("dragover", handleDragOver);
+      dropzoneRef.current?.removeEventListener("dragleave", handleDragLeave);
+      dropzoneRef.current?.removeEventListener<any>("drop", handleDrop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (file) {
+      handleUpload();
+    }
+  }, [file, handleUpload]);
+
   return (
     <div className="font-sans min-h-screen w-[100vw] bg-light flex flex-col items-center justify-between px-4">
       <div className="container grow flex justify-center items-center">
@@ -12,20 +68,29 @@ function App() {
             File should be Jpeg, Png,...
           </p>
 
-          <div className="border-dashed border border-accent-blue bg-soft-blue rounded-[12px] mt-[29px] py-[35px]">
+          <div
+            className="relative border-dashed border-2 border-accent-blue bg-soft-blue rounded-[12px] mt-[29px] py-[35px]"
+            ref={dropzoneRef}
+          >
             <img role="none" src={image} className="mx-auto mb-[53px]" />
             <p className="text-gray4 text-sm text-center">
               Drag & Drop your image here
             </p>
+            <input className="opacity-0 absolute inset-0" />
           </div>
 
           <p className="text-center mt-[18px] text-gray4 font-medium text-xs">
             Or
           </p>
 
-          <button className="bg-primary-blue hover:bg-blue-400 rounded-[8px] py-2 px-4 text-sm text-center text-white block mx-auto mt-[29px]">
+          <label className="relative w-max bg-primary-blue hover:bg-blue-400 rounded-[8px] py-2 px-4 text-sm text-center text-white block mx-auto mt-[29px]">
             Choose a file
-          </button>
+            <input
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              type="file"
+              onChange={onInputChange}
+            />
+          </label>
         </div>
       </div>
 
