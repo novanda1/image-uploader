@@ -6,12 +6,10 @@ function App() {
   const dropzoneRef = useRef<HTMLDivElement>(null);
 
   const handleDragOver = useCallback(() => {
-    console.log("dragover");
     dropzoneRef.current?.classList.add("border-blue-700");
   }, []);
 
   const handleDragLeave = useCallback(() => {
-    console.log("dragleave");
     dropzoneRef.current?.classList.remove("border-blue-700");
   }, []);
 
@@ -32,7 +30,15 @@ function App() {
   );
 
   const handleUpload = useCallback(async () => {
-    console.log("uploading: ", file);
+    if (!file) return;
+
+    const body = new FormData();
+    body.append("file", file);
+
+    await fetch("http://localhost:4000/v1/image/upload", {
+      method: "post",
+      body,
+    });
 
     setFile(null);
   }, [file]);
