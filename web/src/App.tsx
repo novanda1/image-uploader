@@ -29,15 +29,34 @@ function App() {
     []
   );
 
+  const getBase64 = (file: File) => {
+    return new Promise((resolve) => {
+      let fileInfo;
+      let baseURL = "";
+      let reader = new FileReader();
+
+      reader.readAsDataURL(file);
+
+      reader.onload = () => {
+        if (!reader?.result) return;
+        baseURL = reader.result as string;
+        resolve(baseURL);
+      };
+    });
+  };
+
   const handleUpload = useCallback(async () => {
     if (!file) return;
 
-    const body = new FormData();
-    body.append("file", file);
+    const base64 = await getBase64(file);
 
     await fetch("http://localhost:4000/v1/image/upload", {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json, application/xml, text/plain, text/html, *.*",
+      },
       method: "post",
-      body,
+      body: JSON.stringify({ file: base64 }),
     });
 
     setFile(null);
