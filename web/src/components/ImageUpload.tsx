@@ -25,14 +25,13 @@ const ImageUpload = () => {
     })
       .then((res) => res.json())
       .then((r) => {
-        navigate("/image/" + r.data?.name);
+        navigate("/image", { state: { name: r.data?.name } });
         return r;
       })
       .catch((err) => {
         console.log(err);
         setState("idle");
       });
-
 
     setFile(null);
   };

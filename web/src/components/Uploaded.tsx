@@ -1,9 +1,23 @@
-import { useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useNavigation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 
 const Uploaded: React.FC = () => {
-  const { name } = useParams();
+  const [searhParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const name = searhParams.get("name");
+
+  if (!name) {
+    const navigate = useNavigate();
+  }
+
   const url = `http://localhost:4000/v1/image/${name}`;
   const copy = () => {
     navigator.clipboard
