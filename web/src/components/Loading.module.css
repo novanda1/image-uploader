@@ -1,0 +1,15 @@
+.Bar {
+  transition: all 300ms ease;
+  animation: animate 1s linear infinite alternate;
+}
+
+@keyframes animate {
+  from {
+    left: 0;
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+    left: 100%;
+  }
+}
