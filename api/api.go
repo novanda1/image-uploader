@@ -57,6 +57,7 @@ func V1(config *conf.GlobalConfiguration) http.Handler {
 
 type UploadParams struct {
 	File string `json:"file"`
+	Name string `json:"name"`
 }
 
 func Image(config *conf.GlobalConfiguration) http.Handler {
@@ -86,7 +87,7 @@ func Image(config *conf.GlobalConfiguration) http.Handler {
 
 		ur := imagekit.UploadRequest{
 			File:              params.File, // []byte OR *url.URL OR url.URL OR base64 string
-			FileName:          "file name",
+			FileName:          params.Name,
 			UseUniqueFileName: false,
 			Tags:              []string{},
 			Folder:            "/image-uploader",
