@@ -37,7 +37,7 @@ function App() {
     formdata.append("name", file.name || "no name");
     formdata.append("file", file);
 
-    await fetch("http://localhost:4000/v1/image/upload", {
+    await fetch("http://localhost:4000/v1/image", {
       method: "post",
       body: formdata,
     });
