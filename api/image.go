@@ -66,7 +66,7 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ur := imagekit.UploadRequest{
-		File:              buf.Bytes(), // []byte OR *url.URL OR url.URL OR base64 string
+		File:              buf.Bytes(),
 		FileName:          r.Form.Get("name"),
 		UseUniqueFileName: false,
 		Tags:              []string{},
