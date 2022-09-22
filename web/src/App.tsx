@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import image from "./assets/image.svg";
 
-type UploadPayload = {
-  file: string | ArrayBuffer; // base64
-  name: string;
-};
-
 function App() {
   const [file, setFile] = useState<File | null>(null);
 
@@ -35,24 +30,20 @@ function App() {
     []
   );
 
-  const handleUpload = useCallback(
-    async (payload: UploadPayload) => {
-      if (!file) return;
+  const handleUpload = useCallback(async () => {
+    if (!file) return;
 
-      await fetch("http://localhost:4000/v1/image/upload", {
-        headers: {
-          "Content-Type": "application/json",
-          Accept:
-            "application/json, application/xml, text/plain, text/html, *.*",
-        },
-        method: "post",
-        body: JSON.stringify(payload),
-      });
+    let formdata = new FormData();
+    formdata.append("name", file.name || "no name");
+    formdata.append("file", file);
 
-      setFile(null);
-    },
-    [file]
-  );
+    await fetch("http://localhost:4000/v1/image/upload", {
+      method: "post",
+      body: formdata,
+    });
+
+    setFile(null);
+  }, [file]);
 
   useEffect(() => {
     if (dropzoneRef.current) {
@@ -69,24 +60,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    let fileReader: FileReader;
-    let isCancel: boolean;
-    if (file) {
-      fileReader = new FileReader();
-      fileReader.onload = (e) => {
-        const result = e.target?.result;
-        if (result && !isCancel) {
-          handleUpload({ file: result, name: file?.name });
-        }
-      };
-      fileReader.readAsDataURL(file);
-    }
-    return () => {
-      isCancel = true;
-      if (fileReader && fileReader.readyState === 1) {
-        fileReader.abort();
-      }
-    };
+    if (file) handleUpload();
   }, [file]);
 
   return (
