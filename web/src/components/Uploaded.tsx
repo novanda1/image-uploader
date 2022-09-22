@@ -1,8 +1,24 @@
 import { useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 const Uploaded: React.FC = () => {
   const { name } = useParams();
   const url = `http://localhost:4000/v1/image/${name}`;
+  const copy = () => {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("Successfully copied link to your clipboard!", {
+          position: "bottom-right",
+        });
+      })
+      .catch(() => {
+        toast.error("Failed to copy link", {
+          position: "bottom-right",
+        });
+      });
+  };
 
   return (
     <div>
@@ -32,10 +48,15 @@ const Uploaded: React.FC = () => {
         {/* text */}
         <p className="text-xs text-gray2 truncate grow shrink basis-0">{url}</p>
         {/* btn */}
-        <button className="px-[18px] py-[9px] w-max bg-[#2F80ED] rounded-[10px] text-xs text-white">
+        <button
+          onClick={copy}
+          className="px-[18px] py-[9px] w-max bg-[#2F80ED] rounded-[10px] text-xs text-white"
+        >
           Copy link
         </button>
       </div>
+
+      <ToastContainer />
     </div>
   );
 };
