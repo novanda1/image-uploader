@@ -21,7 +21,7 @@ const ImageUpload = () => {
     formdata.append("file", file);
 
     await fetch(
-      "http://localhost:4000/v1/image",
+      `${import.meta.env.VITE_API_URL}/v1/image`,
       {
         method: "post",
         body: formdata,
