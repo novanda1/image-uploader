@@ -16,6 +16,7 @@ type APIConfiguration struct {
 type ImageKitConfiguration struct {
 	PubKey  string `json:"imagekit_pubkey" envconfig:"IMAGEKIT_PUBKEY"`
 	PrivKey string `json:"imagekit_privkey" envconfig:"IMAGEKIT_PRIVKEY"`
+	Id      string `json:"imagekit_id" envconfig:"IMAGEKIT_ID"`
 }
 
 type GlobalConfiguration struct {

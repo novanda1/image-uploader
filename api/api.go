@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -66,7 +67,7 @@ func NewApi(config *conf.GlobalConfiguration) *API {
 			r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 				proxy := &httputil.ReverseProxy{Director: func(req *http.Request) {
 					originHost := "ik.imagekit.io"
-					originPathPrefix := "/superuser/image-uploader/"
+					originPathPrefix := fmt.Sprintf("/%s/image-uploader/", config.IK.Id)
 
 					req.Header.Add("X-Forwarded-Host", req.Host)
 					req.Header.Add("X-Origin-Host", originHost)
