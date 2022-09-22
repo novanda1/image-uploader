@@ -8,7 +8,7 @@ import (
 )
 
 type APIConfiguration struct {
-	Host        string
+	Host        string `envconfig:"HOST"`
 	Port        int    `envconfig:"PORT" default:"8081"`
 	ExternalURL string `json:"external_url" envconfig:"API_EXTERNAL_URL"`
 }
