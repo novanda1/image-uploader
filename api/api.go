@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 
@@ -62,6 +63,21 @@ func NewApi(config *conf.GlobalConfiguration) *API {
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/image", func(r chi.Router) {
 			r.Post("/", api.Upload)
+			r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
+				proxy := &httputil.ReverseProxy{Director: func(req *http.Request) {
+					originHost := "ik.imagekit.io"
+					originPathPrefix := "/superuser/image-uploader/"
+
+					req.Header.Add("X-Forwarded-Host", req.Host)
+					req.Header.Add("X-Origin-Host", originHost)
+					req.Host = originHost
+					req.URL.Scheme = "https"
+					req.URL.Host = originHost
+					req.URL.Path = originPathPrefix + chi.URLParam(r, "id")
+				}}
+
+				proxy.ServeHTTP(w, r)
+			})
 		})
 	})
 

@@ -88,6 +88,9 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ikresp.URL = strings.Replace(ikresp.URL, "https://ik.imagekit.io/superuser/image-uploader", "http://localhost:4000/v1/image", 1)
+	ikresp.ThumbnailURL = ""
+
 	resp.Message = "Upload Successfully"
 	resp.Status = "success"
 	resp.Data = ikresp
