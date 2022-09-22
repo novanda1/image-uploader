@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/codedius/imagekit-go"
 )
@@ -31,7 +32,7 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	f, _, err := r.FormFile("file")
+	f, h, err := r.FormFile("file")
 	if err != nil {
 		badRequest(w, "file not valid")
 		return
@@ -40,6 +41,11 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, f); err != nil {
 		badRequest(w, err.Error())
+		return
+	}
+
+	if strings.Contains(h.Header.Get("Content-Type"), "image") != true {
+		badRequest(w, "file must be image")
 		return
 	}
 
