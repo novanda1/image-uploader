@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import image from "./assets/image.svg";
 
+type UploadPayload = {
+  file: string | ArrayBuffer; // base64
+  name: string;
+};
+
 function App() {
   const [file, setFile] = useState<File | null>(null);
+
   const dropzoneRef = useRef<HTMLDivElement>(null);
 
   const handleDragOver = useCallback(() => {
@@ -29,38 +35,24 @@ function App() {
     []
   );
 
-  const getBase64 = (file: File) => {
-    return new Promise((resolve) => {
-      let fileInfo;
-      let baseURL = "";
-      let reader = new FileReader();
+  const handleUpload = useCallback(
+    async (payload: UploadPayload) => {
+      if (!file) return;
 
-      reader.readAsDataURL(file);
+      await fetch("http://localhost:4000/v1/image/upload", {
+        headers: {
+          "Content-Type": "application/json",
+          Accept:
+            "application/json, application/xml, text/plain, text/html, *.*",
+        },
+        method: "post",
+        body: JSON.stringify(payload),
+      });
 
-      reader.onload = () => {
-        if (!reader?.result) return;
-        baseURL = reader.result as string;
-        resolve(baseURL);
-      };
-    });
-  };
-
-  const handleUpload = useCallback(async () => {
-    if (!file) return;
-
-    const base64 = await getBase64(file);
-
-    await fetch("http://localhost:4000/v1/image/upload", {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json, application/xml, text/plain, text/html, *.*",
-      },
-      method: "post",
-      body: JSON.stringify({ file: base64 }),
-    });
-
-    setFile(null);
-  }, [file]);
+      setFile(null);
+    },
+    [file]
+  );
 
   useEffect(() => {
     if (dropzoneRef.current) {
@@ -77,10 +69,25 @@ function App() {
   }, []);
 
   useEffect(() => {
+    let fileReader: FileReader;
+    let isCancel: boolean;
     if (file) {
-      handleUpload();
+      fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        const result = e.target?.result;
+        if (result && !isCancel) {
+          handleUpload({ file: result, name: file?.name });
+        }
+      };
+      fileReader.readAsDataURL(file);
     }
-  }, [file, handleUpload]);
+    return () => {
+      isCancel = true;
+      if (fileReader && fileReader.readyState === 1) {
+        fileReader.abort();
+      }
+    };
+  }, [file]);
 
   return (
     <div className="font-sans min-h-screen w-[100vw] bg-light flex flex-col items-center justify-between px-4">
