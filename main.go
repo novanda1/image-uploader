@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/novanda1/image-uploader/api"
 	"github.com/novanda1/image-uploader/conf"
@@ -21,5 +20,5 @@ func main() {
 	l := fmt.Sprintf("%v:%v", config.API.Host, config.API.Port)
 	logrus.Infof("Image Uploader API started on: %s", l)
 
-	http.ListenAndServe(l, api)
+	api.ListenAndServe(l)
 }
