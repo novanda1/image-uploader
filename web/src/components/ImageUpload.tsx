@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Dropzone from "./Dropzone";
 import Loading from "./Loading";
-import Uploaded from "./Uploaded";
 
-export type State = "idle" | "loading" | "uploaded";
+export type State = "idle" | "loading";
 
 const ImageUpload = () => {
-  const [uploadData, setUploadData] = useState({});
   const [state, setState] = useState<State>("idle");
   const [file, setFile] = useState<File | null>();
+
+  const navigate = useNavigate();
 
   const upload = async () => {
     if (!file) return;
@@ -24,7 +25,7 @@ const ImageUpload = () => {
     })
       .then((res) => res.json())
       .then((r) => {
-        setState("uploaded");
+        navigate("/image/" + r.data?.name);
         return r;
       })
       .catch((err) => {
@@ -32,7 +33,6 @@ const ImageUpload = () => {
         setState("idle");
       });
 
-    setUploadData(data);
 
     setFile(null);
   };
@@ -42,7 +42,6 @@ const ImageUpload = () => {
   }, [file]);
 
   if (state === "loading") return <Loading />;
-  else if (state === "uploaded") return <Uploaded data={uploadData} />;
 
   return <Dropzone setFile={setFile} />;
 };

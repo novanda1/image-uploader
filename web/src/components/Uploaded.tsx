@@ -1,10 +1,11 @@
-const Uploaded: React.FC<{ data: any }> = ({ data }) => {
-  return (
-    <div>
-      uploaded...
-      {JSON.stringify(data)}
-    </div>
-  );
+import { useParams } from "react-router-dom";
+
+const Uploaded: React.FC = () => {
+  const { name } = useParams();
+
+  console.log({ name });
+
+  return <div>uploaded...</div>;
 };
 
 export default Uploaded;

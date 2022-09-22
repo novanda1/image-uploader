@@ -1,12 +1,12 @@
 import AppWrapper from "./components/AppWrapper";
 import ImageUpload from "./components/ImageUpload";
 
-function App() {
+const Index = () => {
   return (
     <AppWrapper>
       <ImageUpload />
     </AppWrapper>
   );
-}
+};
 
-export default App;
+export default Index;
