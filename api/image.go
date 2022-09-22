@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 
@@ -16,43 +15,31 @@ type UploadResponse struct {
 	Data    interface{} `json:"data"`
 }
 
+func badRequest(w http.ResponseWriter, msg string) {
+	var resp UploadResponse
+	resp.Message = msg
+	resp.Status = "error"
+	resp.Data = nil
+
+	sendJSON(w, http.StatusBadRequest, resp)
+}
+
 func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
-		var resp UploadResponse
-		resp.Message = "Payload not valid"
-		resp.Status = "error"
-		resp.Data = nil
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(resp)
-
+		badRequest(w, "failed to parse form")
 		return
 	}
 
 	f, _, err := r.FormFile("file")
 	if err != nil {
-		var resp UploadResponse
-		resp.Message = "file not valid"
-		resp.Status = "error"
-		resp.Data = nil
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(resp)
-
+		badRequest(w, "file not valid")
 		return
 	}
 
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, f); err != nil {
-		var resp UploadResponse
-		resp.Message = err.Error()
-		resp.Status = "error"
-		resp.Data = nil
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(resp)
-
+		badRequest(w, err.Error())
 		return
 	}
 
@@ -67,9 +54,8 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 		resp.Message = "Server error"
 		resp.Status = "error"
 		resp.Data = nil
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(resp)
+
+		sendJSON(w, http.StatusInternalServerError, resp)
 		return
 	}
 
@@ -92,10 +78,7 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 		resp.Status = "error"
 		resp.Data = nil
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(resp)
-
+		sendJSON(w, http.StatusInternalServerError, resp)
 		return
 	}
 
@@ -103,9 +86,6 @@ func (a *API) Upload(w http.ResponseWriter, r *http.Request) {
 	resp.Status = "success"
 	resp.Data = ikresp
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(resp)
-
+	sendJSON(w, http.StatusCreated, resp)
 	return
 }
