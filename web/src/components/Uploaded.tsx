@@ -1,31 +1,31 @@
+import { useEffect } from "react";
 import {
-  useLocation,
   useNavigate,
-  useNavigation,
-  useParams,
   useSearchParams,
 } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import {
+  toast,
+  ToastContainer,
+} from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 
 const Uploaded: React.FC = () => {
   const [searhParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const name = searhParams.get("name");
-
-  if (!name) {
-    const navigate = useNavigate();
-  }
+  const name = searhParams.get("name") || "";
 
   const url = `http://localhost:4000/v1/image/${name}`;
   const copy = () => {
     navigator.clipboard
       .writeText(url)
       .then(() => {
-        toast.success("Successfully copied link to your clipboard!", {
-          position: "bottom-right",
-        });
+        toast.success(
+          "Successfully copied link to your clipboard!",
+          {
+            position: "bottom-right",
+          }
+        );
       })
       .catch(() => {
         toast.error("Failed to copy link", {
@@ -33,6 +33,12 @@ const Uploaded: React.FC = () => {
         });
       });
   };
+
+  useEffect(() => {
+    if (!name) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div>
@@ -50,7 +56,9 @@ const Uploaded: React.FC = () => {
         />
       </svg>
 
-      <h2 className="text-lg text-center mb-[25px]">Uploaded Successfully!</h2>
+      <h2 className="text-lg text-center mb-[25px]">
+        Uploaded Successfully!
+      </h2>
 
       <img
         className="w-full h-auto object-cover rounded-[12px] mb-[25px]"
@@ -60,7 +68,9 @@ const Uploaded: React.FC = () => {
 
       <div className="relative flex gap-[14px] items-center bg-[#F6F8FB] rounded-[13px] border border-[#E0E0E0] py-0.5 pl-[15px] pr-0.5">
         {/* text */}
-        <p className="text-xs text-gray2 truncate grow shrink basis-0">{url}</p>
+        <p className="text-xs text-gray2 truncate grow shrink basis-0">
+          {url}
+        </p>
         {/* btn */}
         <button
           onClick={copy}
