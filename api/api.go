@@ -1,18 +1,20 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/codedius/imagekit-go"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 
-	"github.com/codedius/imagekit-go"
 	"github.com/novanda1/image-uploader/conf"
 )
 
@@ -55,24 +57,53 @@ func V1(config *conf.GlobalConfiguration) http.Handler {
 	return r
 }
 
-type UploadParams struct {
-	File string `json:"file"`
-	Name string `json:"name"`
+type UploadResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func Image(config *conf.GlobalConfiguration) http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("hi"))
-	})
-
-	r.Post("/upload", func(w http.ResponseWriter, r *http.Request) {
-		var params UploadParams
-
-		err := json.NewDecoder(r.Body).Decode(&params)
+	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseMultipartForm(32 << 20)
 		if err != nil {
-			w.Write([]byte("failed to parse body"))
+			var resp UploadResponse
+			resp.Message = "Payload not valid"
+			resp.Status = "error"
+			resp.Data = nil
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(resp)
+
+			return
+		}
+
+		f, _, err := r.FormFile("file")
+		if err != nil {
+			var resp UploadResponse
+			resp.Message = "file not valid"
+			resp.Status = "error"
+			resp.Data = nil
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(resp)
+
+			return
+		}
+
+		buf := bytes.NewBuffer(nil)
+		if _, err := io.Copy(buf, f); err != nil {
+			var resp UploadResponse
+			resp.Message = err.Error()
+			resp.Status = "error"
+			resp.Data = nil
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(resp)
+
+			return
 		}
 
 		opts := imagekit.Options{
@@ -82,12 +113,19 @@ func Image(config *conf.GlobalConfiguration) http.Handler {
 
 		ik, err := imagekit.NewClient(&opts)
 		if err != nil {
-			w.Write([]byte("failed to setup imagekit"))
+			var resp UploadResponse
+			resp.Message = "Server error"
+			resp.Status = "error"
+			resp.Data = nil
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(resp)
+			return
 		}
 
 		ur := imagekit.UploadRequest{
-			File:              params.File, // []byte OR *url.URL OR url.URL OR base64 string
-			FileName:          params.Name,
+			File:              buf.Bytes(), // []byte OR *url.URL OR url.URL OR base64 string
+			FileName:          r.Form.Get("name"),
 			UseUniqueFileName: false,
 			Tags:              []string{},
 			Folder:            "/image-uploader",
@@ -96,15 +134,28 @@ func Image(config *conf.GlobalConfiguration) http.Handler {
 			ResponseFields:    nil,
 		}
 
-		resp, err := ik.Upload.ServerUpload(context.Background(), &ur)
+		var resp UploadResponse
+
+		ikresp, err := ik.Upload.ServerUpload(context.Background(), &ur)
+		if err != nil {
+			resp.Message = err.Error()
+			resp.Status = "error"
+			resp.Data = nil
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(resp)
+
+			return
+		}
+
+		resp.Message = "Upload Successfully"
+		resp.Status = "success"
+		resp.Data = ikresp
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(resp)
-	})
-
-	r.Get("/{image_id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("handle get image by id"))
 	})
 
 	return r
