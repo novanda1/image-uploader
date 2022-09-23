@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	config, err := conf.LoadGlobal(".env")
+	config, err := conf.LoadGlobal("")
 
 	if err != nil {
 		logrus.Fatalf("failed load .env: %v", err)
