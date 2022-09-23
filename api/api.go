@@ -77,6 +77,8 @@ func NewApi(config *conf.GlobalConfiguration) *API {
 					req.URL.Path = originPathPrefix + chi.URLParam(r, "id")
 				}}
 
+				logrus.Info(fmt.Sprintf("reverse proxy to imagekit: /%s/image-uploader/%s", config.IK.Id, chi.URLParam(r, "id")))
+
 				proxy.ServeHTTP(w, r)
 			})
 		})
