@@ -15,7 +15,7 @@ const Uploaded: React.FC = () => {
 
   const name = searhParams.get("name") || "";
 
-  const url = `http://localhost:4000/v1/image/${name}`;
+  const url = `${import.meta.env.VITE_API_URL}/v1/image/${name}`;
   const copy = () => {
     navigator.clipboard
       .writeText(url)
